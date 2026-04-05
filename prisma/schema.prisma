@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Counselor {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+
+  students      Student[]
+  sessions      Session[]
+  action_items  ActionItem[]
+  counselor_notes CounselorNote[]
+  college_lists CollegeList[]
+  audit_logs    AuditLog[]
+}
+
+model Student {
+  id                String   @id @default(uuid())
+  counselor_id      String
+  first_name        String
+  last_name         String
+  grade             Int
+  gpa               Float?
+  test_scores       Json?
+  intended_major    String?
+  extracurriculars  String?
+  family_context    String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  counselor         Counselor @relation(fields: [counselor_id], references: [id])
+  college_lists     CollegeList[]
+  sessions          Session[]
+  action_items      ActionItem[]
+  counselor_notes   CounselorNote[]
+
+  @@index([counselor_id])
+}
+
+model School {
+  id              String   @id @default(uuid())
+  name            String
+  scorecard_id    String?
+  research_cache  Json?
+  research_updated_at DateTime?
+  created_at      DateTime @default(now())
+
+  aliases         SchoolAlias[]
+  college_lists   CollegeList[]
+
+  @@unique([name])
+}
+
+model SchoolAlias {
+  id        String @id @default(uuid())
+  school_id String
+  alias     String
+
+  school    School @relation(fields: [school_id], references: [id], onDelete: Cascade)
+
+  @@unique([alias])
+  @@index([school_id])
+}
+
+model CollegeList {
+  id                String   @id @default(uuid())
+  student_id        String
+  school_id         String
+  counselor_id      String
+  classification    Classification @default(TARGET)
+  application_round ApplicationRound @default(RD)
+  status            ApplicationStatus @default(NOT_STARTED)
+  deadline          DateTime?
+  notes             String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  student           Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  school            School    @relation(fields: [school_id], references: [id])
+  counselor         Counselor @relation(fields: [counselor_id], references: [id])
+  action_items      ActionItem[]
+
+  @@unique([student_id, school_id])
+  @@index([student_id])
+  @@index([counselor_id])
+}
+
+model Session {
+  id              String   @id @default(uuid())
+  student_id      String
+  counselor_id    String
+  date            DateTime
+  raw_notes       String
+  parsed_summary  String?
+  changeset       Json?
+  created_at      DateTime @default(now())
+
+  student         Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor       Counselor @relation(fields: [counselor_id], references: [id])
+
+  @@index([student_id])
+  @@index([counselor_id])
+  @@index([date])
+}
+
+model ActionItem {
+  id              String   @id @default(uuid())
+  student_id      String
+  counselor_id    String
+  college_list_id String?
+  description     String
+  due_date        DateTime?
+  status          ActionItemStatus @default(OPEN)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  student         Student     @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor       Counselor   @relation(fields: [counselor_id], references: [id])
+  college_list    CollegeList? @relation(fields: [college_list_id], references: [id], onDelete: SetNull)
+
+  @@index([student_id])
+  @@index([counselor_id])
+  @@index([status])
+  @@index([due_date])
+}
+
+model CounselorNote {
+  id            String   @id @default(uuid())
+  student_id    String
+  counselor_id  String
+  content       String
+  created_at    DateTime @default(now())
+
+  student       Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor     Counselor @relation(fields: [counselor_id], references: [id])
+
+  @@index([student_id])
+  @@index([counselor_id])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  counselor_id  String
+  student_id    String?
+  changeset     Json
+  result        Json?
+  success       Boolean
+  error         String?
+  created_at    DateTime @default(now())
+
+  counselor     Counselor @relation(fields: [counselor_id], references: [id])
+
+  @@index([counselor_id])
+  @@index([student_id])
+  @@index([created_at])
+}
+
+enum Classification {
+  REACH
+  TARGET
+  LIKELY
+}
+
+enum ApplicationRound {
+  EA
+  ED
+  ED2
+  REA
+  RD
+}
+
+enum ApplicationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  DEFERRED
+  WITHDRAWN
+}
+
+enum ActionItemStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETE
+  OVERDUE
+}
