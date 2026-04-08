@@ -5,7 +5,7 @@ import { NOTE_PARSER_SYSTEM_PROMPT } from "./prompt";
 import { prisma } from "@/lib/prisma";
 import { Changeset } from "@/types/changeset";
 
-const MODEL = "meta-llama/llama-4-maverick:free";
+const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 
 export async function parseSessionNotes({
   studentId,
@@ -29,6 +29,9 @@ export async function parseSessionNotes({
         orderBy: { date: "desc" },
         take: 3,
         select: { date: true, parsed_summary: true },
+      },
+      essays: {
+        include: { school: true },
       },
     },
   });
@@ -54,6 +57,9 @@ ${student.college_lists.map((cl: any) => `- ${cl.school.name} | ${cl.classificat
 CURRENT OPEN ACTION ITEMS:
 ${student.action_items.map((ai: any) => `- ID: ${ai.id} | ${ai.description} | Due: ${ai.due_date?.toISOString().split("T")[0] || "None"} | Status: ${ai.status} | School: ${ai.college_list?.school?.name || "General"}`).join("\n") || "None"}
 
+CURRENT ESSAYS:
+${student.essays.map((e: any) => `- ID: ${e.id} | ${e.title} | School: ${e.school?.name || "General"} | Status: ${e.status} | Doc: ${e.doc_link || "None"} | Prompt: ${e.prompt || "None"}`).join("\n") || "None"}
+
 RECENT SESSION SUMMARIES:
 ${student.sessions.map((s: any) => `- ${s.date.toISOString().split("T")[0]}: ${s.parsed_summary || "No summary"}`).join("\n") || "No prior sessions"}
 
@@ -69,14 +75,16 @@ ${rawNotes}`;
   const parsed = parseJsonResponse(raw);
 
   // Inject student_id into all operations that need it
-  const changeset: Changeset = parsed.operations.map((op: any) => ({
-    type: op.type,
-    entity: op.entity,
-    data: {
-      ...op.data,
-      student_id: op.data.student_id || studentId,
-    },
-  }));
+  const changeset: Changeset = (parsed.operations || [])
+    .filter((op: any) => op && op.type && op.entity && op.data)
+    .map((op: any) => ({
+      type: op.type,
+      entity: op.entity,
+      data: {
+        ...op.data,
+        student_id: op.data.student_id || studentId,
+      },
+    }));
 
   return {
     parsedSummary: parsed.parsed_summary,

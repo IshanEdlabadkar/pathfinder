@@ -20,6 +20,8 @@ model Counselor {
   counselor_notes CounselorNote[]
   college_lists CollegeList[]
   audit_logs    AuditLog[]
+  scheduled_events ScheduledEvent[]
+  essays          Essay[]
 }
 
 model Student {
@@ -41,6 +43,8 @@ model Student {
   sessions          Session[]
   action_items      ActionItem[]
   counselor_notes   CounselorNote[]
+  scheduled_events ScheduledEvent[]
+  essays          Essay[]
 
   @@index([counselor_id])
 }
@@ -55,6 +59,7 @@ model School {
 
   aliases         SchoolAlias[]
   college_lists   CollegeList[]
+  essays          Essay[]
 
   @@unique([name])
 }
@@ -161,6 +166,55 @@ model AuditLog {
   @@index([counselor_id])
   @@index([student_id])
   @@index([created_at])
+}
+
+model ScheduledEvent {
+  id            String   @id @default(uuid())
+  counselor_id  String
+  student_id    String?
+  title         String
+  date          DateTime
+  notes         String?
+  created_at    DateTime @default(now())
+
+  counselor     Counselor @relation(fields: [counselor_id], references: [id])
+  student       Student?  @relation(fields: [student_id], references: [id], onDelete: Cascade)
+
+  @@index([counselor_id])
+  @@index([student_id])
+  @@index([date])
+}
+
+model Essay {
+  id              String   @id @default(uuid())
+  student_id      String
+  counselor_id    String
+  school_id       String?
+  title           String
+  prompt          String?
+  word_limit      Int?
+  status          EssayStatus @default(NOT_STARTED)
+  doc_link        String?
+  notes           String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  student         Student   @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  counselor       Counselor @relation(fields: [counselor_id], references: [id])
+  school          School?   @relation(fields: [school_id], references: [id])
+
+  @@index([student_id])
+  @@index([counselor_id])
+  @@index([status])
+}
+
+enum EssayStatus {
+  NOT_STARTED
+  DRAFTING
+  REVIEW_READY
+  REVISING
+  FINAL
+  SUBMITTED
 }
 
 enum Classification {

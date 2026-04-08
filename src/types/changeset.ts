@@ -6,7 +6,9 @@ export type ChangesetEntity =
   | "ACTION_ITEM"
   | "COLLEGE_LIST"
   | "SESSION"
-  | "COUNSELOR_NOTE";
+  | "COUNSELOR_NOTE"
+  | "SCHEDULED_EVENT"
+  | "ESSAY";
 
 export interface ChangesetOperation {
   type: ChangesetOperationType;

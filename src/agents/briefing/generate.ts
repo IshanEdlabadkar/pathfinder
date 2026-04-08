@@ -5,7 +5,7 @@ import { BRIEFING_SYSTEM_PROMPT } from "./prompt";
 import { prisma } from "@/lib/prisma";
 
 
-const MODEL = "meta-llama/llama-4-maverick:free";
+const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 
 export interface Briefing {
   student_summary: string;
@@ -34,6 +34,9 @@ export async function generateBriefing({
         orderBy: { date: "desc" },
         take: 5,
         select: { date: true, raw_notes: true, parsed_summary: true },
+      },
+      essays: {
+        include: { school: true },
       },
       counselor_notes: {
         orderBy: { created_at: "desc" },
@@ -79,6 +82,9 @@ ${student.sessions.map((s: any) => `- ${s.date.toISOString().split("T")[0]}: ${s
 
 COUNSELOR NOTES:
 ${student.counselor_notes.map((n: any) => `- ${n.created_at.toISOString().split("T")[0]}: ${n.content}`).join("\n") || "None"}
+
+ESSAYS:
+${student.essays.map((e: any) => `- ${e.title} | School: ${e.school?.name || "General"} | Status: ${e.status} | Doc: ${e.doc_link || "None"}`).join("\n") || "None"}
 
 SCHOOL RESEARCH:
 ${researchContext || "No cached research available"}`;

@@ -35,11 +35,19 @@ export async function chatCompletion({
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+
+  const content = data.choices?.[0]?.message?.content;
+
+  if (!content) {
+    console.error("OpenRouter response:", JSON.stringify(data, null, 2));
+    throw new Error("Model returned empty response");
+  }
+
+  return content;
+  
 }
 
 export function parseJsonResponse(raw: string): any {
-  // Strip markdown code fences if present
   const cleaned = raw
     .replace(/```json\s*/g, "")
     .replace(/```\s*/g, "")

@@ -1,5 +1,3 @@
-// src/app/api/sessions/parse-notes/route.ts
-
 import { parseSessionNotes } from "@/agents/noteParser/parse";
 import { NextResponse } from "next/server";
 
@@ -22,8 +20,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, parsedSummary, changeset });
   } catch (err: any) {
+    console.error("Parse notes error:", err);
     return NextResponse.json(
-      { success: false, error: err.message },
+      { success: false, error: err.message || "Unknown error" },
       { status: 500 }
     );
   }
