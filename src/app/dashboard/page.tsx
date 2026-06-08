@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { getCurrentCounselor } from "@/lib/auth";
 import AddStudentButton from "@/components/AddStudentButton";
+import LogoutButton from "@/components/LogoutButton";
 import UpcomingWeek from "@/components/UpcomingWeek";
 import PriorityQueue from "@/components/PriorityQueue";
 
@@ -118,6 +119,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <a href="/calendar" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Calendar</a>
             <AddStudentButton />
+            <LogoutButton />
           </div>
         </div>
       </header>

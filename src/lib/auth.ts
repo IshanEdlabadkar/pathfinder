@@ -1,14 +1,22 @@
 // src/lib/auth.ts
 
 import { prisma } from "./prisma";
+import { getSession } from "./session";
+import { redirect } from "next/navigation";
 
-// For now, returns the first counselor in the database
-// Replace with real auth later
 export async function getCurrentCounselor() {
-  const counselor = await prisma.counselor.findFirst();
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const counselor = await prisma.counselor.findUnique({
+    where: { id: session.counselorId },
+  });
 
   if (!counselor) {
-    throw new Error("No counselor found — run the seed script");
+    redirect("/login");
   }
 
   return counselor;
