@@ -4,8 +4,9 @@ import { chatCompletion, parseJsonResponse } from "@/lib/openrouter";
 import { NOTE_PARSER_SYSTEM_PROMPT } from "./prompt";
 import { prisma } from "@/lib/prisma";
 import { Changeset } from "@/types/changeset";
+import { DEFAULT_MODEL } from "@/lib/models";
 
-const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
+
 
 export async function parseSessionNotes({
   studentId,
@@ -67,7 +68,7 @@ RAW SESSION NOTES:
 ${rawNotes}`;
 
   const raw = await chatCompletion({
-    model: MODEL,
+    model: DEFAULT_MODEL,
     systemPrompt: NOTE_PARSER_SYSTEM_PROMPT,
     userMessage,
   });

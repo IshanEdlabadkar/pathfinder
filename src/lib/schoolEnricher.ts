@@ -2,6 +2,7 @@
 
 import { chatCompletion, parseJsonResponse} from "@/lib/openrouter";
 import { prisma } from "./prisma";
+import { DEFAULT_MODEL } from "@/lib/models";
 
 const ENRICHMENT_PROMPT = `You are a college admissions data assistant. Given a university name and application round, provide accurate admissions information.
 
@@ -75,7 +76,7 @@ export async function enrichCollegeListEntry(
   ) {
     try {
       const raw = await chatCompletion({
-        model: "nvidia/nemotron-3-super-120b-a12b:free",
+        model: DEFAULT_MODEL,
         systemPrompt: ENRICHMENT_PROMPT,
         userMessage: `University: ${schoolName}\nApplication Round: ${round}\nAdmissions Cycle: 2026-2027`,
       });

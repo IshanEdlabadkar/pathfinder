@@ -3,6 +3,7 @@
 import { chatCompletion } from "@/lib/openrouter";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { DEFAULT_MODEL } from "@/lib/models";
 
 const NUDGE_PROMPT = `You are a college counselor's assistant. Draft a short, friendly reminder message from the counselor to a student about an overdue or upcoming task.
 
@@ -59,7 +60,7 @@ ${actionItem.college_list?.school ? `Related school: ${actionItem.college_list.s
 ${actionItem.student.intended_major ? `Student's intended major: ${actionItem.student.intended_major}` : ""}`;
 
     const message = await chatCompletion({
-      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      model: DEFAULT_MODEL,
       systemPrompt: NUDGE_PROMPT,
       userMessage: context,
     });

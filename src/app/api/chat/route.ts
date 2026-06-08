@@ -3,8 +3,9 @@
 import { chatCompletion } from "@/lib/openrouter";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { DEFAULT_MODEL } from "@/lib/models";
 
-const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
+
 
 // src/app/api/chat/route.ts
 
@@ -93,7 +94,7 @@ COUNSELOR'S QUESTION:
 ${question}`;
 
     const answer = await chatCompletion({
-      model: MODEL,
+      model: DEFAULT_MODEL,
       systemPrompt: CHAT_SYSTEM_PROMPT,
       userMessage,
     });

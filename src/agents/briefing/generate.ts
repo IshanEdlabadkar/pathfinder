@@ -3,9 +3,10 @@
 import { chatCompletion, parseJsonResponse } from "@/lib/openrouter";
 import { BRIEFING_SYSTEM_PROMPT } from "./prompt";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_MODEL } from "@/lib/models";
 
 
-const MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
+
 
 export interface Briefing {
   student_summary: string;
@@ -90,7 +91,7 @@ SCHOOL RESEARCH:
 ${researchContext || "No cached research available"}`;
 
   const raw = await chatCompletion({
-    model: MODEL,
+    model: DEFAULT_MODEL,
     systemPrompt: BRIEFING_SYSTEM_PROMPT,
     userMessage,
   });
