@@ -23,8 +23,12 @@ export async function middleware(req: NextRequest) {
   }
 
   const token = req.cookies.get("pathfinder_session")?.value;
+  const isApi = pathname.startsWith("/api/");
 
   if (!token) {
+    if (isApi) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -32,6 +36,9 @@ export async function middleware(req: NextRequest) {
     await jwtVerify(token, SECRET);
     return NextResponse.next();
   } catch {
+    if (isApi) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", req.url));
   }
 }
